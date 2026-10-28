@@ -1,0 +1,87 @@
+<!DOCTYPE html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rakib’s classroom</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--b:#0b6bff;--d:#0a1f5c;--l:#eaf2ff;--t:#1b2540}
+*{box-sizing:border-box}body{margin:0;font-family:'Hind Siliguri',system-ui,sans-serif;color:var(--t);background:#f6f9ff}
+header{background:var(--d);color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.logo{font-size:22px;font-weight:700;cursor:pointer}.logo b{color:#3d9bff}.logo small{display:block;font-size:11px;font-weight:400;opacity:.8}
+nav a{color:#fff;margin-left:14px;cursor:pointer;font-size:15px}
+main{max-width:980px;margin:auto;padding:16px}
+.hero{background:linear-gradient(135deg,#e3efff,#fff);border-radius:16px;padding:24px}
+.hero h1{margin:4px 0;font-size:30px}.hero h1 b{color:var(--b)}
+.btn{background:var(--b);color:#fff;border:0;border-radius:24px;padding:11px 22px;font:600 16px inherit;font-family:inherit;cursor:pointer}
+.btn.o{background:#fff;color:var(--b);border:1.5px solid var(--b)}.btn.r{background:#d33}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin:14px 0}
+.card{background:#fff;border:1px solid #dbe5f7;border-radius:12px;padding:14px;cursor:pointer;display:flex;gap:10px;align-items:center}
+.card .i{font-size:28px}.card small{color:#667}
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:14px 0}
+.feat div{background:#fff;border-radius:12px;padding:12px}
+.box{background:#fff;border-radius:14px;padding:18px;margin:12px 0;border:1px solid #dbe5f7}
+input,select,textarea{width:100%;padding:10px;border:1.5px solid #c9d6ee;border-radius:10px;font:inherit;margin:6px 0}
+.opt{display:block;width:100%;text-align:left;background:#fff;border:1.5px solid #c9d6ee;border-radius:10px;padding:12px;margin:8px 0;font:inherit;cursor:pointer}
+.opt.s{border-color:var(--b);background:var(--l)}
+.bar{height:6px;background:#dbe5f7;border-radius:3px}.bar i{display:block;height:100%;background:var(--b);border-radius:3px}
+table{width:100%;border-collapse:collapse}td,th{padding:8px;border-bottom:1px solid #e4ebf8;text-align:left}tr.me{background:#fff6cc}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+footer{text-align:center;padding:18px;color:#667;font-size:13px}
+</style></head><body>
+<header><div class="logo" onclick="home()">🎓 Rakib’s <b>classroom</b><small>Learn • Practice • Grow</small></div>
+<nav><a onclick="home()">Home</a><a onclick="subjects()">Subjects</a><a onclick="boards()">Leaderboard</a></nav></header>
+<main id="app">লোড হচ্ছে…</main><footer>© 2026 Rakib’s classroom</footer>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import{getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,deleteDoc,updateDoc,query,where}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import{getAuth,signInWithEmailAndPassword,signOut}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+/* ====== এখানে আপনার Firebase config বসান ====== */
+const cfg={apiKey:"",authDomain:"",projectId:"",appId:""};
+/* =============================================== */
+const fb=initializeApp(cfg),db=getFirestore(fb),auth=getAuth(fb),app=document.getElementById('app');
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const SUB=[['Mathematics','🧮'],['Physics','⚛️'],['Chemistry','⚗️'],['Biology','🧬'],['English','📖'],['Bangla','অ'],['General Knowledge','💡'],['ICT','🖥️']];
+let exams=[],S={};
+const load=async()=>{exams=(await getDocs(collection(db,'exams'))).docs.map(d=>({id:d.id,...d.data()}))};
+const key=n=>n.trim().toLowerCase().replace(/\s+/g,' ');
+const fmt=s=>Math.floor(s/60)+'মি '+s%60+'সে';
+window.home=async()=>{clearInterval(S.tm);app.innerHTML='লোড হচ্ছে…';try{await load()}catch(e){app.innerHTML='<div class=box>Firebase config ঠিক নেই বা ডাটাবেস পাওয়া যাচ্ছে না।</div>';return}
+app.innerHTML=`<div class=hero><h1>Welcome to<br><b>Rakib’s classroom</b></h1><p>অনলাইনে MCQ পরীক্ষা দিন, ফলাফল ও র‍্যাংক দেখুন — সব এক জায়গায়।</p><button class=btn onclick="list()">▶ Start Exam</button> <button class="btn o" onclick="subjects()">Explore Subjects</button></div>
+<div class=feat><div>📚 <b>Multiple Subjects</b><br><small>সব বিষয়ের প্রস্তুতি</small></div><div>⚡ <b>Instant Result</b><br><small>সাথে সাথে স্কোর</small></div><div>📊 <b>Leaderboard</b><br><small>কে কত নম্বর পেল</small></div><div>📱 <b>Any Device</b><br><small>ফোন, ট্যাব বা কম্পিউটার</small></div></div>
+<h2>Choose Your Subject</h2>${grid()}`};
+const grid=()=>`<div class=grid>${SUB.map(([n,i])=>`<div class=card onclick="list('${n}')"><span class=i>${i}</span><div><b>${n}</b><br><small>${exams.filter(e=>e.subject==n).length} টি পরীক্ষা</small></div></div>`).join('')}</div>`;
+window.subjects=async()=>{await load();app.innerHTML='<h2>Subjects</h2>'+grid()};
+window.list=async sub=>{await load();const a=exams.filter(e=>e.active!==false&&(!sub||e.subject==sub));
+app.innerHTML=`<h2>${sub||'সব পরীক্ষা'}</h2>`+(a.map(e=>`<div class="box row"><div><b>${esc(e.title)}</b><br><small>${esc(e.subject)} • ${e.qs.length} প্রশ্ন • ${e.qs.length} মিনিট</small></div><button class=btn onclick="ready('${e.id}')">পরীক্ষা দিন</button></div>`).join('')||'<div class=box>কোনো পরীক্ষা নেই।</div>')};
+window.ready=id=>{S={e:exams.find(e=>e.id==id)};app.innerHTML=`<div class=box><h2>${esc(S.e.title)}</h2><p>${S.e.qs.length} টি প্রশ্ন • প্রতি প্রশ্নে ১ মিনিট • একবারই দেওয়া যাবে।</p><input id=nm placeholder="আপনার নাম"><button class=btn onclick="begin()">শুরু করুন</button></div>`};
+window.begin=async()=>{const n=document.getElementById('nm').value.trim();if(!n)return alert('নাম লিখুন');
+const k=S.e.id+'_'+key(n);let done=localStorage.getItem('done_'+S.e.id);
+try{if((await getDoc(doc(db,'results',k))).exists())done=1}catch(e){}
+if(done){app.innerHTML=`<div class=box>আপনি এই পরীক্ষা আগেই দিয়েছেন।<br><br>${S.e.showBoard?`<button class=btn onclick="board('${S.e.id}')">Leaderboard</button>`:''}</div>`;return}
+Object.assign(S,{n:n,k:k,i:0,a:[],t0:Date.now()});q()};
+function q(){clearInterval(S.tm);const e=S.e,x=e.qs[S.i];S.left=60;S.sel=-1;
+app.innerHTML=`<div class=box><div class=row><b>প্রশ্ন ${S.i+1}/${e.qs.length}</b><b id=tm>⏱ 60</b></div><div class=bar><i style="width:${S.i/e.qs.length*100}%"></i></div><h3>${esc(x.q)}</h3>${x.o.map((o,j)=>`<button class=opt onclick="pick(${j},this)">${'কখগঘ'[j]}. ${esc(o)}</button>`).join('')}<button class=btn onclick="nxt()">${S.i+1==e.qs.length?'জমা দিন':'পরবর্তী ➜'}</button></div>`;
+S.tm=setInterval(()=>{S.left--;document.getElementById('tm').textContent='⏱ '+S.left;if(S.left<=0)nxt()},1000)}
+window.pick=(j,b)=>{S.sel=j;document.querySelectorAll('.opt').forEach(o=>o.classList.remove('s'));b.classList.add('s')};
+window.nxt=()=>{S.a.push(S.sel);S.i++;S.i<S.e.qs.length?q():fin()};
+async function fin(){clearInterval(S.tm);const sc=S.a.filter((v,i)=>v==S.e.qs[i].a).length,tot=S.e.qs.length,t=Math.round((Date.now()-S.t0)/1000);
+localStorage.setItem('done_'+S.e.id,1);
+try{await setDoc(doc(db,'results',S.k),{examId:S.e.id,name:S.n,score:sc,total:tot,time:t,at:Date.now()})}catch(e){alert('ফলাফল সেভ হয়নি: '+e.message)}
+app.innerHTML=`<div class=box><h2>🎉 ${esc(S.n)}, আপনার ফলাফল</h2><h1>${sc} / ${tot}</h1><p>সময়: ${fmt(t)}</p>${S.e.qs.map((x,i)=>`<p>${i+1}. ${esc(x.q)}<br>${S.a[i]==x.a?'✅':'❌'} সঠিক উত্তর: <b>${esc(x.o[x.a])}</b></p>`).join('')}${S.e.showBoard?`<button class=btn onclick="board('${S.e.id}')">Leaderboard দেখুন</button>`:''}</div>`}
+window.boards=async()=>{await load();const a=exams.filter(e=>e.showBoard);app.innerHTML='<h2>Leaderboard</h2>'+(a.map(e=>`<div class="box row"><b>${esc(e.title)}</b><button class=btn onclick="board('${e.id}')">দেখুন</button></div>`).join('')||'<div class=box>এখনো কোনো লিডারবোর্ড চালু নেই।</div>')};
+window.board=async id=>{const e=exams.find(x=>x.id==id)||S.e;if(!e.showBoard)return alert('লিডারবোর্ড বন্ধ আছে');
+const r=(await getDocs(query(collection(db,'results'),where('examId','==',id)))).docs.map(d=>d.data()).sort((a,b)=>b.score-a.score||a.time-b.time);
+app.innerHTML=`<h2>${esc(e.title)}</h2><div class=box><table><tr><th>র‍্যাংক</th><th>নাম</th><th>সঠিক</th><th>সময়</th></tr>${r.map((x,i)=>`<tr class="${S.n&&key(x.name)==key(S.n)?'me':''}"><td>${i+1}</td><td>${esc(x.name)}</td><td>${x.score}/${x.total}</td><td>${fmt(x.time)}</td></tr>`).join('')}</table></div>`};
+window.admin=async()=>{await load();if(auth.currentUser)return panel();
+app.innerHTML=`<div class=box><h3>Admin লগইন</h3><input id=em type=email placeholder="ইমেইল"><input id=pw type=password placeholder="পাসওয়ার্ড"><button class=btn onclick="login()">লগইন</button></div>`};
+window.login=async()=>{try{await signInWithEmailAndPassword(auth,document.getElementById('em').value.trim(),document.getElementById('pw').value);await load();panel()}catch(e){alert('লগইন হয়নি: ইমেইল বা পাসওয়ার্ড ভুল')}};
+window.out=()=>signOut(auth).then(home);
+function panel(){app.innerHTML=`<div class=row><h2>Admin</h2><button class="btn o" onclick="out()">লগআউট</button></div><div class=box><h3>নতুন পরীক্ষা</h3><input id=ti placeholder="পরীক্ষার নাম"><select id=su>${SUB.map(s=>`<option>${s[0]}</option>`).join('')}</select>
+<textarea id=qq rows=7 placeholder="প্রতি লাইনে একটি প্রশ্ন:&#10;প্রশ্ন | ক | খ | গ | ঘ | সঠিক নম্বর (১-৪ বা 1-4)"></textarea><button class=btn onclick="addEx()">সেভ করুন</button></div>
+<h3>পরীক্ষাসমূহ</h3>${exams.map(e=>`<div class=box><b>${esc(e.title)}</b> <small>(${esc(e.subject)}, ${e.qs.length} প্রশ্ন)</small><div class=row style="margin-top:8px"><button class="btn o" onclick="tg('${e.id}','showBoard',${!e.showBoard})">Leaderboard: ${e.showBoard?'চালু':'বন্ধ'}</button><button class="btn o" onclick="tg('${e.id}','active',${e.active===false})">পরীক্ষা: ${e.active===false?'বন্ধ':'চালু'}</button><button class="btn r" onclick="del('${e.id}')">ডিলিট</button></div></div>`).join('')}`}
+window.addEx=async()=>{const bn='০১২৩৪৫৬৭৮৯',qs=[];
+for(const l of document.getElementById('qq').value.split('\n')){const p=l.split('|').map(s=>s.trim());if(p.length<6)continue;
+const a=parseInt(String(p[5]).replace(/[০-৯]/g,c=>bn.indexOf(c)))-1;if(a>=0&&a<4)qs.push({q:p[0],o:p.slice(1,5),a})}
+const t=document.getElementById('ti').value.trim();if(!t||!qs.length)return alert('নাম ও সঠিক ফরম্যাটে প্রশ্ন দিন');
+await addDoc(collection(db,'exams'),{title:t,subject:document.getElementById('su').value,qs,showBoard:false,active:true});await load();panel()};
+window.tg=async(id,f,v)=>{await updateDoc(doc(db,'exams',id),{[f]:v});await load();panel()};
+window.del=async id=>{if(confirm('ডিলিট করবেন?')){await deleteDoc(doc(db,'exams',id));await load();panel()}};
+location.hash=="#admin"?admin():home();
+</script></body></html>
