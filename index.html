@@ -33,7 +33,16 @@ import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-ap
 import{getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,deleteDoc,updateDoc,query,where}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import{getAuth,signInWithEmailAndPassword,signOut}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 /* ====== এখানে আপনার Firebase config বসান ====== */
-const cfg={apiKey:"",authDomain:"",projectId:"",appId:""};
+const cfg={apiKey:"// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBzemAFSsO7Dvchp_Cqdi6SY0QAbAKA64s",
+  authDomain: "rakib-s-classroom.firebaseapp.com",
+  projectId: "rakib-s-classroom",
+  storageBucket: "rakib-s-classroom.firebasestorage.app",
+  messagingSenderId: "396246241789",
+  appId: "1:396246241789:web:6637669578d3245bb08994",
+  measurementId: "G-SXHKEHZJ42"
+};",authDomain:"",projectId:"",appId:""};
 /* =============================================== */
 const fb=initializeApp(cfg),db=getFirestore(fb),auth=getAuth(fb),app=document.getElementById('app');
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -43,28 +52,28 @@ const load=async()=>{exams=(await getDocs(collection(db,'exams'))).docs.map(d=>(
 const key=n=>n.trim().toLowerCase().replace(/\s+/g,' ');
 const fmt=s=>Math.floor(s/60)+'মি '+s%60+'সে';
 window.home=async()=>{clearInterval(S.tm);app.innerHTML='লোড হচ্ছে…';try{await load()}catch(e){app.innerHTML='<div class=box>Firebase config ঠিক নেই বা ডাটাবেস পাওয়া যাচ্ছে না।</div>';return}
-app.innerHTML=`<div class=hero><h1>Welcome to<br><b>Rakib’s classroom</b></h1><p>অনলাইনে MCQ পরীক্ষা দিন, ফলাফল ও র‍্যাংক দেখুন — সব এক জায়গায়।</p><button class=btn onclick="list()">▶ Start Exam</button> <button class="btn o" onclick="subjects()">Explore Subjects</button></div>
+app.innerHTML=`<div class=hero><h1>Welcome to<br><b>Rakib’s classroom</b></h1><p>অনলাইন MCQ পরীক্ষা এসএসসি ২৭, প্রত্যাবর্তন ২.০</p><button class=btn onclick="list()">▶ Start Exam</button> <button class="btn o" onclick="subjects()">Explore Subjects</button></div>
 <div class=feat><div>📚 <b>Multiple Subjects</b><br><small>সব বিষয়ের প্রস্তুতি</small></div><div>⚡ <b>Instant Result</b><br><small>সাথে সাথে স্কোর</small></div><div>📊 <b>Leaderboard</b><br><small>কে কত নম্বর পেল</small></div><div>📱 <b>Any Device</b><br><small>ফোন, ট্যাব বা কম্পিউটার</small></div></div>
 <h2>Choose Your Subject</h2>${grid()}`};
 const grid=()=>`<div class=grid>${SUB.map(([n,i])=>`<div class=card onclick="list('${n}')"><span class=i>${i}</span><div><b>${n}</b><br><small>${exams.filter(e=>e.subject==n).length} টি পরীক্ষা</small></div></div>`).join('')}</div>`;
 window.subjects=async()=>{await load();app.innerHTML='<h2>Subjects</h2>'+grid()};
 window.list=async sub=>{await load();const a=exams.filter(e=>e.active!==false&&(!sub||e.subject==sub));
-app.innerHTML=`<h2>${sub||'সব পরীক্ষা'}</h2>`+(a.map(e=>`<div class="box row"><div><b>${esc(e.title)}</b><br><small>${esc(e.subject)} • ${e.qs.length} প্রশ্ন • ${e.qs.length} মিনিট</small></div><button class=btn onclick="ready('${e.id}')">পরীক্ষা দিন</button></div>`).join('')||'<div class=box>কোনো পরীক্ষা নেই।</div>')};
-window.ready=id=>{S={e:exams.find(e=>e.id==id)};app.innerHTML=`<div class=box><h2>${esc(S.e.title)}</h2><p>${S.e.qs.length} টি প্রশ্ন • প্রতি প্রশ্নে ১ মিনিট • একবারই দেওয়া যাবে।</p><input id=nm placeholder="আপনার নাম"><button class=btn onclick="begin()">শুরু করুন</button></div>`};
-window.begin=async()=>{const n=document.getElementById('nm').value.trim();if(!n)return alert('নাম লিখুন');
+app.innerHTML=`<h2>${sub||'সব পরীক্ষা'}</h2>`+(a.map(e=>`<div class="box row"><div><b>${esc(e.title)}</b><br><small>${esc(e.subject)} • ${e.qs.length} প্রশ্ন • ${e.qs.length} মিনিট</small></div><button class=btn onclick="ready('${e.id}')">পরীক্ষা দাও</button></div>`).join('')||'<div class=box>কোনো পরীক্ষা নেই।</div>')};
+window.ready=id=>{S={e:exams.find(e=>e.id==id)};app.innerHTML=`<div class=box><h2>${esc(S.e.title)}</h2><p>${S.e.qs.length} টি প্রশ্ন • প্রতি প্রশ্নে ১ মিনিট • একবারই দেওয়া যাবে।</p><input id=nm placeholder="তোমার নাম"><button class=btn onclick="begin()">শুরু করো</button></div>`};
+window.begin=async()=>{const n=document.getElementById('nm').value.trim();if(!n)return alert('নাম লেখ');
 const k=S.e.id+'_'+key(n);let done=localStorage.getItem('done_'+S.e.id);
 try{if((await getDoc(doc(db,'results',k))).exists())done=1}catch(e){}
-if(done){app.innerHTML=`<div class=box>আপনি এই পরীক্ষা আগেই দিয়েছেন।<br><br>${S.e.showBoard?`<button class=btn onclick="board('${S.e.id}')">Leaderboard</button>`:''}</div>`;return}
+if(done){app.innerHTML=`<div class=box>তুমি এই পরীক্ষা আগেই দিয়েছেন।<br><br>${S.e.showBoard?`<button class=btn onclick="board('${S.e.id}')">Leaderboard</button>`:''}</div>`;return}
 Object.assign(S,{n:n,k:k,i:0,a:[],t0:Date.now()});q()};
 function q(){clearInterval(S.tm);const e=S.e,x=e.qs[S.i];S.left=60;S.sel=-1;
-app.innerHTML=`<div class=box><div class=row><b>প্রশ্ন ${S.i+1}/${e.qs.length}</b><b id=tm>⏱ 60</b></div><div class=bar><i style="width:${S.i/e.qs.length*100}%"></i></div><h3>${esc(x.q)}</h3>${x.o.map((o,j)=>`<button class=opt onclick="pick(${j},this)">${'কখগঘ'[j]}. ${esc(o)}</button>`).join('')}<button class=btn onclick="nxt()">${S.i+1==e.qs.length?'জমা দিন':'পরবর্তী ➜'}</button></div>`;
+app.innerHTML=`<div class=box><div class=row><b>প্রশ্ন ${S.i+1}/${e.qs.length}</b><b id=tm>⏱ 60</b></div><div class=bar><i style="width:${S.i/e.qs.length*100}%"></i></div><h3>${esc(x.q)}</h3>${x.o.map((o,j)=>`<button class=opt onclick="pick(${j},this)">${'কখগঘ'[j]}. ${esc(o)}</button>`).join('')}<button class=btn onclick="nxt()">${S.i+1==e.qs.length?'জমা দাও':'পরবর্তী ➜'}</button></div>`;
 S.tm=setInterval(()=>{S.left--;document.getElementById('tm').textContent='⏱ '+S.left;if(S.left<=0)nxt()},1000)}
 window.pick=(j,b)=>{S.sel=j;document.querySelectorAll('.opt').forEach(o=>o.classList.remove('s'));b.classList.add('s')};
 window.nxt=()=>{S.a.push(S.sel);S.i++;S.i<S.e.qs.length?q():fin()};
 async function fin(){clearInterval(S.tm);const sc=S.a.filter((v,i)=>v==S.e.qs[i].a).length,tot=S.e.qs.length,t=Math.round((Date.now()-S.t0)/1000);
 localStorage.setItem('done_'+S.e.id,1);
 try{await setDoc(doc(db,'results',S.k),{examId:S.e.id,name:S.n,score:sc,total:tot,time:t,at:Date.now()})}catch(e){alert('ফলাফল সেভ হয়নি: '+e.message)}
-app.innerHTML=`<div class=box><h2>🎉 ${esc(S.n)}, আপনার ফলাফল</h2><h1>${sc} / ${tot}</h1><p>সময়: ${fmt(t)}</p>${S.e.qs.map((x,i)=>`<p>${i+1}. ${esc(x.q)}<br>${S.a[i]==x.a?'✅':'❌'} সঠিক উত্তর: <b>${esc(x.o[x.a])}</b></p>`).join('')}${S.e.showBoard?`<button class=btn onclick="board('${S.e.id}')">Leaderboard দেখুন</button>`:''}</div>`}
+app.innerHTML=`<div class=box><h2>🎉 ${esc(S.n)}, তোমার ফলাফল</h2><h1>${sc} / ${tot}</h1><p>সময়: ${fmt(t)}</p>${S.e.qs.map((x,i)=>`<p>${i+1}. ${esc(x.q)}<br>${S.a[i]==x.a?'✅':'❌'} সঠিক উত্তর: <b>${esc(x.o[x.a])}</b></p>`).join('')}${S.e.showBoard?`<button class=btn onclick="board('${S.e.id}')">Leaderboard দেখুন</button>`:''}</div>`}
 window.boards=async()=>{await load();const a=exams.filter(e=>e.showBoard);app.innerHTML='<h2>Leaderboard</h2>'+(a.map(e=>`<div class="box row"><b>${esc(e.title)}</b><button class=btn onclick="board('${e.id}')">দেখুন</button></div>`).join('')||'<div class=box>এখনো কোনো লিডারবোর্ড চালু নেই।</div>')};
 window.board=async id=>{const e=exams.find(x=>x.id==id)||S.e;if(!e.showBoard)return alert('লিডারবোর্ড বন্ধ আছে');
 const r=(await getDocs(query(collection(db,'results'),where('examId','==',id)))).docs.map(d=>d.data()).sort((a,b)=>b.score-a.score||a.time-b.time);
